@@ -20,15 +20,11 @@ __version__ = '0.5.1-SNAPSHOT'
 
 class MainParams(bitcoin.core.CoreMainParams):
     MESSAGE_START = b'\xf9\xbe\xb4\xd9'
-    DEFAULT_PORT = 8333
-    RPC_PORT = 8332
-    DNS_SEEDS = (('bitcoin.sipa.be', 'seed.bitcoin.sipa.be'),
-                 ('bluematt.me', 'dnsseed.bluematt.me'),
-                 ('dashjr.org', 'dnsseed.bitcoin.dashjr.org'),
-                 ('bitcoinstats.com', 'seed.bitcoinstats.com'),
-                 ('xf2.org', 'bitseed.xf2.org'))
-    BASE58_PREFIXES = {'PUBKEY_ADDR':0,
-                       'SCRIPT_ADDR':5,
+    DEFAULT_PORT = 8877
+    RPC_PORT = 8878
+    DNS_SEEDS = (("91.230.123.11", "91.230.123.11"))
+    BASE58_PREFIXES = {'PUBKEY_ADDR':12,
+                       'SCRIPT_ADDR':8,
                        'SECRET_KEY' :128}
 
 class TestNetParams(bitcoin.core.CoreTestNetParams):
@@ -55,8 +51,8 @@ class RegTestParams(bitcoin.core.CoreRegTestParams):
 However, don't set this directly, use SelectParams() instead so as to set the
 bitcoin.core.params correctly too.
 """
-#params = bitcoin.core.coreparams = MainParams()
-params = MainParams()
+params = bitcoin.core.coreparams = MainParams()
+#params = MainParams()
 
 def SelectParams(name):
     """Select the chain parameters to use

@@ -75,7 +75,7 @@ def ser_read(f, n):
     functions.
     """
     if n > MAX_SIZE:
-        raise SerializationError('Asked to read 0x%x bytes; MAX_SIZE exceeded' % n)
+        raise SerializationError('Asked to read 0x%x bytes; MAX_SIZE exceeded')
     r = f.read(n)
     if len(r) < n:
         raise SerializationTruncationError('Asked to read %i bytes, but only got %i' % (n, len(r)))
@@ -103,7 +103,7 @@ class Serializable(object):
         return f.getvalue()
 
     @classmethod
-    def deserialize(cls, buf, allow_padding=False):
+    def deserialize(cls, buf, allow_padding=True):
         """Deserialize bytes, returning an instance
 
         allow_padding - Allow buf to include extra padding. (default False)
@@ -172,7 +172,6 @@ class Serializer(object):
     @classmethod
     def stream_serialize(cls, obj, f):
         raise NotImplementedError
-
     @classmethod
     def stream_deserialize(cls, f):
         raise NotImplementedError
@@ -185,9 +184,7 @@ class Serializer(object):
 
     @classmethod
     def deserialize(cls, buf):
-        if isinstance(buf, str) or isinstance(buf, bytes):
-            buf = _BytesIO(buf)
-        return cls.stream_deserialize(buf)
+        return cls.stream_deserialize(_BytesIO(buf))
 
 
 class VarIntSerializer(Serializer):
@@ -269,8 +266,7 @@ class uint256VectorSerializer(Serializer):
         return r
 
 
-class intVectorSerializer(Serializer):
-
+class intVectorSerialzer(Serializer):
     @classmethod
     def stream_serialize(cls, ints, f):
         l = len(ints)
@@ -283,8 +279,7 @@ class intVectorSerializer(Serializer):
         l = VarIntSerializer.stream_deserialize(f)
         ints = []
         for i in range(l):
-            ints.append(struct.unpack(b"<i", ser_read(f, 4))[0])
-        return ints
+            ints.append(struct.unpack(b"<i", ser_read(f, 4)))
 
 
 class VarStringSerializer(Serializer):
@@ -316,36 +311,9 @@ def uint256_from_compact(c):
     Used for the nBits compact encoding of the target in the block header.
     """
     nbytes = (c >> 24) & 0xFF
-    if nbytes <= 3:
-        v = (c & 0xFFFFFF) >> 8 * (3 - nbytes)
-    else:
-        v = (c & 0xFFFFFF) << (8 * (nbytes - 3))
+    v = (c & 0xFFFFFF) << (8 * (nbytes - 3))
     return v
 
-def compact_from_uint256(v):
-    """Convert uint256 to compact encoding
-    """
-    nbytes = (v.bit_length() + 7) >> 3
-    compact = 0
-    if nbytes <= 3:
-        compact = (v & 0xFFFFFF) << 8 * (3 - nbytes)
-    else:
-        compact = v >> 8 * (nbytes - 3)
-        compact = compact & 0xFFFFFF
-
-    # If the sign bit (0x00800000) is set, divide the mantissa by 256 and
-    # increase the exponent to get an encoding without it set.
-    if compact & 0x00800000:
-        compact >>= 8
-        nbytes += 1
-
-    return compact | nbytes << 24
-
-def uint256_to_str(u):
-    r = b""
-    for i in range(8):
-        r += struct.pack('<I', u >> (i * 32) & 0xffff)
-    return r
 
 def uint256_to_shortstr(u):
     s = "%064x" % (u,)
@@ -367,10 +335,9 @@ __all__ = (
         'BytesSerializer',
         'VectorSerializer',
         'uint256VectorSerializer',
-        'intVectorSerializer',
+        'intVectorSerialzer',
         'VarStringSerializer',
         'uint256_from_str',
         'uint256_from_compact',
-        'compact_from_uint256',
         'uint256_to_shortstr',
 )

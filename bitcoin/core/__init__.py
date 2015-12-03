@@ -389,9 +389,9 @@ class CMutableTransaction(CTransaction):
 
 class CBlockHeader(ImmutableSerializable):
     """A block header"""
-    __slots__ = ['nVersion', 'hashPrevBlock', 'hashMerkleRoot', 'nTime', 'nBits', 'nNonce']
+    __slots__ = ['nVersion', 'hashPrevBlock', 'hashMerkleRoot', 'nTime', 'nBits', 'nNonce', 'BirthdayA', 'BirthdayB']
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0):
+    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, bdayA=0, bdayB=0):
         object.__setattr__(self, 'nVersion', nVersion)
         assert len(hashPrevBlock) == 32
         object.__setattr__(self, 'hashPrevBlock', hashPrevBlock)
@@ -400,6 +400,8 @@ class CBlockHeader(ImmutableSerializable):
         object.__setattr__(self, 'nTime', nTime)
         object.__setattr__(self, 'nBits', nBits)
         object.__setattr__(self, 'nNonce', nNonce)
+        object.__setattr__(self, 'BirthdayA', bdayA)
+        object.__setattr__(self, 'BirthdayB', bdayB)
 
     @classmethod
     def stream_deserialize(cls, f):
@@ -409,7 +411,9 @@ class CBlockHeader(ImmutableSerializable):
         nTime = struct.unpack(b"<I", ser_read(f,4))[0]
         nBits = struct.unpack(b"<I", ser_read(f,4))[0]
         nNonce = struct.unpack(b"<I", ser_read(f,4))[0]
-        return cls(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce)
+        bdayA = struct.unpack(b"<I", ser_read(f,4))[0]
+        bdayB = struct.unpack(b"<I", ser_read(f,4))[0]
+        return cls(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce, bdayA, bdayB)
 
     def stream_serialize(self, f):
         f.write(struct.pack(b"<i", self.nVersion))
@@ -420,6 +424,8 @@ class CBlockHeader(ImmutableSerializable):
         f.write(struct.pack(b"<I", self.nTime))
         f.write(struct.pack(b"<I", self.nBits))
         f.write(struct.pack(b"<I", self.nNonce))
+        f.write(struct.pack(b"<I", self.bdayA))
+        f.write(struct.pack(b"<I", self.bdayB))
 
     @staticmethod
     def calc_difficulty(nBits):
@@ -491,9 +497,9 @@ class CBlock(CBlockHeader):
             raise ValueError('Block contains no transactions')
         return self.build_merkle_tree_from_txs(self.vtx)[-1]
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, vtx=()):
+    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, bdayA=0, bdayB=0, vtx=()):
         """Create a new block"""
-        super(CBlock, self).__init__(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce)
+        super(CBlock, self).__init__(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce, bdayA, bdayB)
 
         vMerkleTree = tuple(CBlock.build_merkle_tree_from_txs(vtx))
         object.__setattr__(self, 'vMerkleTree', vMerkleTree)
@@ -524,7 +530,9 @@ class CBlock(CBlockHeader):
                             hashMerkleRoot=self.hashMerkleRoot,
                             nTime=self.nTime,
                             nBits=self.nBits,
-                            nNonce=self.nNonce)
+                            nNonce=self.nNonce,
+                            bdayA=self.bdayA, 
+                            bdayB=self.bdayB)
 
     def GetHash(self):
         """Return the block hash
@@ -550,9 +558,10 @@ class CoreChainParams(object):
 class CoreMainParams(CoreChainParams):
     MAX_MONEY = 21000000 * COIN
     NAME = 'mainnet'
-    GENESIS_BLOCK = CBlock.deserialize(x('0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000'))
+   
+    GENESIS_BLOCK = CBlock.deserialize(x('0100000000000000000000000000000000000000000000000000000000000000000000009d7f5d7a819515674cda9f121a6e39a953613fe3075623864fa88ee0d3c0c35c7ca98c54ffff0f2002000000ab3e90018b3395030101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c04ffff001d01041457656c6c206e6f7468696e6720736572696f7573ffffffff0100c817a804000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000'))
     SUBSIDY_HALVING_INTERVAL = 210000
-    PROOF_OF_WORK_LIMIT = 2**256-1 >> 32
+    PROOF_OF_WORK_LIMIT = 2**256-1 >> 4
 
 class CoreTestNetParams(CoreMainParams):
     NAME = 'testnet'
