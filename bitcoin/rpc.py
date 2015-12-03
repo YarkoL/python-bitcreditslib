@@ -87,12 +87,12 @@ class BaseProxy(object):
             # Figure out the path to the bitcoin.conf file
             if btc_conf_file is None:
                 if platform.system() == 'Darwin':
-                    btc_conf_file = os.path.expanduser('~/Library/Application Support/Bitcoin/')
+                    btc_conf_file = os.path.expanduser('~/Library/Application Support/bicreditsnew/')
                 elif platform.system() == 'Windows':
-                    btc_conf_file = os.path.join(os.environ['APPDATA'], 'Bitcoin')
+                    btc_conf_file = os.path.join(os.environ['APPDATA'], 'bicreditsnew')
                 else:
-                    btc_conf_file = os.path.expanduser('~/.bitcoin')
-                btc_conf_file = os.path.join(btc_conf_file, 'bitcoin.conf')
+                    btc_conf_file = os.path.expanduser('~/.bitcredit')
+                btc_conf_file = os.path.join(btc_conf_file, 'bitcredit.conf')
 
             # Extract contents of bitcoin.conf to build service_url
             with open(btc_conf_file, 'r') as fd:
@@ -214,6 +214,9 @@ class BaseProxy(object):
 
     def __del__(self):
         self.__conn.close()
+        
+    def _debug(self):
+        return self.__service_url            
 
 
 class RawProxy(BaseProxy):
@@ -284,7 +287,10 @@ class Proxy(BaseProxy):
                                     btc_conf_file=btc_conf_file,
                                     timeout=timeout,
                                     **kwargs)
-
+                                    
+    def debug(self):
+        return self._debug() 
+                                
     def call(self, service_name, *args):
         """Call an RPC method by name and raw (JSON encodable) arguments"""
         return self._call(service_name, *args)
@@ -617,7 +623,7 @@ class Proxy(BaseProxy):
 
     def removenode(self, node):
         return self._addnode(node, 'remove')
-
+        
 __all__ = (
     'JSONRPCError',
     'JSONRPCException',
