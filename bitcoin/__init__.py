@@ -29,12 +29,11 @@ class MainParams(bitcoin.core.CoreMainParams):
 
 class TestNetParams(bitcoin.core.CoreTestNetParams):
     MESSAGE_START = b'\x0b\x11\x09\x07'
-    DEFAULT_PORT = 18333
-    RPC_PORT = 18332
-    DNS_SEEDS = (('bitcoin.petertodd.org', 'testnet-seed.bitcoin.petertodd.org'),
-                 ('bluematt.me', 'testnet-seed.bluematt.me'))
-    BASE58_PREFIXES = {'PUBKEY_ADDR':111,
-                       'SCRIPT_ADDR':196,
+    DEFAULT_PORT = 88771
+    RPC_PORT = 88781
+    DNS_SEEDS = ()
+    BASE58_PREFIXES = {'PUBKEY_ADDR':13,
+                       'SCRIPT_ADDR':9,
                        'SECRET_KEY' :239}
 
 class RegTestParams(bitcoin.core.CoreRegTestParams):
