@@ -11,15 +11,14 @@ with open(os.path.join(here, 'README')) as f:
 
 requires = []
 
-setup(name='python-bitcoinlib',
+setup(name='python-bitcreditslib',
       version=__version__,
       description='The Swiss Army Knife of the Bitcoin protocol.',
       long_description=README,
       classifiers=[
           "Programming Language :: Python",
       ],
-      url='https://github.com/petertodd/python-bitcoinlib',
-      keywords='bitcoin',
+      url='https://github.com/YarkoL/python-bitcreditslib',
       packages=find_packages(),
       zip_safe=False,
       install_requires=requires,
